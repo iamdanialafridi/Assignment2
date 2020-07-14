@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Assignment2</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="age">Age</string>
+    <string name="dob">DOB</string>
+    <string-array name="hobbies">
+        <item>Running</item>
+        <item>Weight lifting</item>
+        <item>Badminton</item>
+        <item>Horse Riding</item>
+        <item>Football</item>
+        <item>Swimming</item>
+        <item>Hiking</item>
+        <item>Cricket</item>
+        <item>Book Reading</item>
+        <item>Online Games</item>
+        <item>Chess</item>
+        <item>Table Tennis</item>
+    </string-array>
+</resources>
