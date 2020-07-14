@@ -3,6 +3,7 @@ package com.example.assignment2;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
     static Bitmap img,img1;
 SessionManager sessionManager;
+    RecyclerView recyclerView;
 ImageView UserImg;
 TextView showName,showUserName,showAge,showDOB,showGender,showHobbies;
     RadioGroup genderRadio;
@@ -57,6 +59,7 @@ com.example.assignment2.Db_Helper db_helper;
         name = findViewById(R.id.Name);
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
+        recyclerView = findViewById(R.id.userRv);
         age = findViewById(R.id.age);
         dob = findViewById(R.id.dob);
         UserImg = findViewById(R.id.UserImg);
@@ -122,6 +125,7 @@ com.example.assignment2.Db_Helper db_helper;
         });
         loginLayout.setVisibility(View.GONE);
         panelLayout.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
 
 // login view here
         btnLoginView.setOnClickListener(new View.OnClickListener() {
@@ -167,6 +171,7 @@ com.example.assignment2.Db_Helper db_helper;
         });
         genderRadio.setOnCheckedChangeListener(this);
         if (sessionManager.isLoggedIn()){
+            recyclerView.setVisibility(View.VISIBLE);
             regLayout.setVisibility(View.GONE);
             loginLayout.setVisibility(View.GONE);
             panelLayout.setVisibility(View.VISIBLE);
