@@ -6,13 +6,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
 import android.util.Log;
-import android.widget.EditText;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-
 
 import com.example.assignment2.Classess.User_Model;
 
@@ -78,9 +74,7 @@ public class Db_Helper extends SQLiteOpenHelper {
 
 
             long insertq = sqLiteDatabase.insertOrThrow(User_Model.TABLE_NAME, null, contentValues);
-            if (insertq == FAILURE_CODE) return false;
-            else
-                return true;
+            return insertq != FAILURE_CODE;
         } catch (Exception e) {
             e.getMessage();
             return false;
@@ -90,25 +84,23 @@ public class Db_Helper extends SQLiteOpenHelper {
     public boolean checkUsernameIfexist(String username) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         @SuppressLint("Recycle") Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM USERS WHERE USERNAME=?",new String[]{username});
-        if (cursor.getCount()>0) return  false;
-        else return true;
+        return cursor.getCount() <= 0;
     }
 
     public boolean User_Login(User_Model userModel) {
 
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         @SuppressLint("Recycle") Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM USERS WHERE USERNAME=? AND PASSWORD=?", new String[]{userModel.getUsername(), userModel.getUser_password()});
-        if (cursor.getCount() > 0) return true;
-        else return false;
+        return cursor.getCount() > 0;
     }
 
-    public User_Model getUID_BYUSERNAME(String username) {
+    public User_Model getdataByID(int user_id) {
         SQLiteDatabase db = getReadableDatabase();
-        @SuppressLint("Recycle") Cursor cursor = db.rawQuery(User_Model.GET_USER_ID_BY_USERNAME, new String[]{username}, null);
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery(User_Model.GET_USER_BY_ID, new String[]{String.valueOf(user_id)}, null);
 
 
         int UID;
-        String name,Username,dob,age,gender,hobby;
+        String name, Username, dob, age, gender, hobby;
         byte[] image;
 
 
@@ -123,7 +115,7 @@ public class Db_Helper extends SQLiteOpenHelper {
             image = cursor.getBlob(cursor.getColumnIndex(User_Model.KEY_USER_IMG));
             UID = cursor.getInt(cursor.getColumnIndex(User_Model.KEY_USER_ID));
 
-            return new User_Model(UID,name,Username,dob,age,hobby,gender,image);
+            return new User_Model(UID, name, Username, dob, age, hobby, gender, image);
 
 
         } else {
@@ -131,5 +123,31 @@ public class Db_Helper extends SQLiteOpenHelper {
         }
     }
 
+    public List<User_Model> getRegisterUser() {
+        SQLiteDatabase db = getReadableDatabase();
+        @SuppressLint("Recycle") Cursor cursor = db.rawQuery(User_Model.SELECT_ALL_USER, null);
+        List<User_Model> user_modelList = new ArrayList<>(cursor.getCount());
+        String name;
+        byte[] image;
+        int userID;
+
+
+        if (cursor.moveToFirst()) {
+            do {
+
+                name = cursor.getString(cursor.getColumnIndex(User_Model.KEY_USER_NAME));
+
+                image = cursor.getBlob(cursor.getColumnIndex(User_Model.KEY_USER_IMG));
+                userID = cursor.getInt(cursor.getColumnIndex(User_Model.KEY_USER_ID));
+
+                user_modelList.add(new User_Model(userID, name, image));
+
+            } while (cursor.moveToNext());
+
+
+        }
+
+        return user_modelList;
+    }
 }
 

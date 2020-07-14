@@ -1,10 +1,5 @@
 package com.example.assignment2;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,30 +22,48 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.assignment2.Classess.User_Model;
+import com.example.assignment2.Holder.User_Holder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
-    static Bitmap img,img1;
-SessionManager sessionManager;
+    private static final int CHOSE_IMG_REQ_CODE = 1;
+    private static final int Capture_IMG = 2;
+    static Bitmap img, img1;
     RecyclerView recyclerView;
-ImageView UserImg;
-TextView showName,showUserName,showAge,showDOB,showGender,showHobbies;
+    SessionManager sessionManager;
     RadioGroup genderRadio;
-SharedPreferences sharedPreferences;
-com.example.assignment2.Db_Helper db_helper;
+    ImageView UserImg;
+    TextView showName, showUserName, showAge, showDOB, showGender, showHobbies;
     AutoCompleteTextView hobbiesView;
-    EditText name,username,password,age,dob,loginPassword,loginUsername;
-    Button btnCapture,btnLoginView,btnRegView,btnReg,btnLogin,btnLogout;
-    LinearLayout loginLayout,regLayout,panelLayout;
-    private static final int CHOSE_IMG_REQ_CODE=1;
-    private static final int Capture_IMG=2;
-    String hobbies,Gender,USERNAME;
+    SharedPreferences sharedPreferences;
+    com.example.assignment2.Db_Helper db_helper;
+    EditText name, username, password, age, dob, loginPassword, loginUsername;
+    Button btnCapture, btnLoginView, btnRegView, btnReg, btnLogin, btnLogout, btnsignout;
+    LinearLayout loginLayout, regLayout, panelLayout, layoutRv;
+    String hobbies, Gender, USERNAME;
     int UID;
+    List<User_Model> user_modelList;
+    User_Holder user_holder;
+
+    public static byte[] dbimg(Bitmap img) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        img.compress(Bitmap.CompressFormat.JPEG, 0, stream);
+        byte[] Imgbyte = stream.toByteArray();
+        return Imgbyte;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,24 +83,26 @@ com.example.assignment2.Db_Helper db_helper;
         showName = findViewById(R.id.showName);
         showUserName = findViewById(R.id.showUsername);
         loginLayout = findViewById(R.id.loginLayout);
+        layoutRv = findViewById(R.id.layoutRv);
         panelLayout = findViewById(R.id.panelLayout);
         regLayout = findViewById(R.id.regLayout);
         btnLoginView = findViewById(R.id.btnLoginView);
         btnLogin = findViewById(R.id.btnLogin);
         btnLogout = findViewById(R.id.btnLogout);
+        btnsignout = findViewById(R.id.btnsignout);
         loginUsername = findViewById(R.id.LoginUsername);
         loginPassword = findViewById(R.id.loginPassword);
         btnRegView = findViewById(R.id.btnRegView);
         btnReg = findViewById(R.id.btnReg);
-        hobbiesView=findViewById(R.id.hobbies);
+        hobbiesView = findViewById(R.id.hobbies);
         db_helper = com.example.assignment2.Db_Helper.getInstance(this);
         sessionManager = new SessionManager(this);
-        sharedPreferences=getSharedPreferences("UserName",MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("UserName", MODE_PRIVATE);
 
         String[] hobbiesString = getResources().getStringArray(R.array.hobbies);
-        ArrayAdapter hobbieAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,hobbiesString);
+        ArrayAdapter hobbieAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, hobbiesString);
         hobbiesView.setAdapter(hobbieAdapter);
-        btnCapture = (Button)findViewById(R.id.btnCapture);
+        btnCapture = (Button) findViewById(R.id.btnCapture);
         btnCapture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,25 +111,21 @@ com.example.assignment2.Db_Helper db_helper;
 //                if (intent.resolveActivity(getPackageManager())!=null){
 //                    startActivityForResult(intent, CHOSE_IMG_REQ_CODE);
 //                }
-                final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
+                final CharSequence[] options = {"Take Photo", "Choose from Gallery", "Cancel"};
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Add Photo!");
                 builder.setItems(options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int item) {
-                        if (options[item].equals("Take Photo"))
-                        {
+                        if (options[item].equals("Take Photo")) {
                             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                                 startActivityForResult(takePictureIntent, Capture_IMG);
                             }
-                        }
-                        else if (options[item].equals("Choose from Gallery"))
-                        {
-                            Intent intent = new   Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        } else if (options[item].equals("Choose from Gallery")) {
+                            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                             startActivityForResult(intent, CHOSE_IMG_REQ_CODE);
-                        }
-                        else if (options[item].equals("Cancel")) {
+                        } else if (options[item].equals("Cancel")) {
                             dialog.dismiss();
                         }
                     }
@@ -126,6 +137,7 @@ com.example.assignment2.Db_Helper db_helper;
         loginLayout.setVisibility(View.GONE);
         panelLayout.setVisibility(View.GONE);
         recyclerView.setVisibility(View.GONE);
+        layoutRv.setVisibility(View.GONE);
 
 // login view here
         btnLoginView.setOnClickListener(new View.OnClickListener() {
@@ -142,8 +154,8 @@ com.example.assignment2.Db_Helper db_helper;
             public void onClick(View view) {
                 try {
                     User_Login_METHOD();
-                } catch (Exception e){
-                    Log.d("error404",""+e.getMessage());
+                } catch (Exception e) {
+                    Log.d("error404", "" + e.getMessage());
                 }
             }
         });
@@ -164,38 +176,63 @@ com.example.assignment2.Db_Helper db_helper;
             public void onClick(View view) {
                 try {
                     User_Registration_method();
-                } catch (Exception e){
-                    Log.d("error404",""+e.getMessage());
+                } catch (Exception e) {
+                    Log.d("error404", "" + e.getMessage());
                 }
             }
         });
         genderRadio.setOnCheckedChangeListener(this);
-        if (sessionManager.isLoggedIn()){
+        if (sessionManager.isLoggedIn()) {
+
             recyclerView.setVisibility(View.VISIBLE);
+            layoutRv.setVisibility(View.VISIBLE);
             regLayout.setVisibility(View.GONE);
             loginLayout.setVisibility(View.GONE);
-            panelLayout.setVisibility(View.VISIBLE);
-            if (sharedPreferences.contains("USERNAME")){
-                USERNAME = sharedPreferences.getString("USERNAME",USERNAME);
-                User_Model userModel = db_helper.getUID_BYUSERNAME(USERNAME);
-                UID = userModel.getUser_id();
-                Bitmap bitmap = BitmapFactory.decodeByteArray(userModel.getUser_image(),0,userModel.getUser_image().length);
-                //holder.img.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 380, 130, false));
-                UserImg.setImageBitmap(bitmap);
-                showName.setText(userModel.getName());
-                showUserName.setText(userModel.getUsername());
-                showGender.setText(userModel.getUser_gender());
-                showAge.setText(userModel.getUser_age());
-                showDOB.setText(userModel.getUser_dob());
-                showHobbies.setText(userModel.getUser_hobbies());
+            panelLayout.setVisibility(View.GONE);
+            if (sharedPreferences.contains("USERNAME")) {
+                USERNAME = sharedPreferences.getString("USERNAME", USERNAME);
+
+                user_modelList = db_helper.getRegisterUser();
+                user_holder = new User_Holder(this, user_modelList);
+                recyclerView.setAdapter(user_holder);
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                recyclerView.setHasFixedSize(true);
+                Intent intent = getIntent();
+                if (intent.getIntExtra("USERID", 0) == 0) {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    btnsignout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            sessionManager.logoutUser();
+                        }
+                    });
+                } else {
+                    int userid = intent.getIntExtra("USERID", 0);
+                    recyclerView.setVisibility(View.GONE);
+                    btnsignout.setVisibility(View.GONE);
+                    panelLayout.setVisibility(View.VISIBLE);
+                    User_Model userModel = db_helper.getdataByID(userid);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(userModel.getUser_image(), 0, userModel.getUser_image().length);
+                    //holder.img.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 380, 130, false));
+                    UserImg.setImageBitmap(bitmap);
+                    showName.setText(userModel.getName());
+                    showUserName.setText(userModel.getUsername());
+                    showGender.setText(userModel.getUser_gender());
+                    showAge.setText(userModel.getUser_age());
+                    showDOB.setText(userModel.getUser_dob());
+                    showHobbies.setText(userModel.getUser_hobbies());
+                    btnLogout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            sessionManager.logoutUser();
+                        }
+                    });
+
+                }
+
 
             }
-            btnLogout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    sessionManager.logoutUser();
-                }
-            });
+
 
         }
 
@@ -204,31 +241,30 @@ com.example.assignment2.Db_Helper db_helper;
     private void User_Login_METHOD() {
         String USERNAME = loginUsername.getText().toString().trim();
         String PASSWORD = loginPassword.getText().toString().trim();
-        if (TextUtils.isEmpty(USERNAME)){
+        if (TextUtils.isEmpty(USERNAME)) {
             loginUsername.setError("Required");
-        } else if (TextUtils.isEmpty(PASSWORD)){
+        } else if (TextUtils.isEmpty(PASSWORD)) {
             loginPassword.setError("Required");
         } else {
-User_Model userModel = new User_Model(USERNAME,PASSWORD);
-if (db_helper.User_Login(userModel)){
-    sessionManager.createLoginSession(USERNAME,PASSWORD);
-    @SuppressLint("CommitPrefEdits")
-    SharedPreferences.Editor e=sharedPreferences.edit();
-    e.putString("USERNAME",USERNAME);
-    e.apply();
+            User_Model userModel = new User_Model(USERNAME, PASSWORD);
+            if (db_helper.User_Login(userModel)) {
+                sessionManager.createLoginSession(USERNAME, PASSWORD);
+                @SuppressLint("CommitPrefEdits")
+                SharedPreferences.Editor e = sharedPreferences.edit();
+                e.putString("USERNAME", USERNAME);
+                e.apply();
 
-    startActivity(new Intent(MainActivity.this,MainActivity.class));
+                startActivity(new Intent(MainActivity.this, MainActivity.class));
 
-}
+            }
         }
-
 
 
     }
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int i) {
-        switch (i){
+        switch (i) {
             case R.id.male:
                 Gender = "Male";
 
@@ -238,6 +274,7 @@ if (db_helper.User_Login(userModel)){
                 break;
         }
     }
+
     private void User_Registration_method() {
 
         String Name = name.getText().toString().trim();
@@ -246,28 +283,28 @@ if (db_helper.User_Login(userModel)){
         String DOB = dob.getText().toString().trim();
         String Age = age.getText().toString().trim();
         hobbies = hobbiesView.getText().toString();
-        if (TextUtils.isEmpty(Name)){
+        if (TextUtils.isEmpty(Name)) {
             name.setError("Required");
-        } else if (TextUtils.isEmpty(Username)){
+        } else if (TextUtils.isEmpty(Username)) {
             username.setError("Required");
-        } else if (TextUtils.isEmpty(Password)){
+        } else if (TextUtils.isEmpty(Password)) {
             password.setError("Required");
-        }else if (TextUtils.isEmpty(DOB)){
+        } else if (TextUtils.isEmpty(DOB)) {
             dob.setError("Required");
-        } else if (TextUtils.isEmpty(Age)){
+        } else if (TextUtils.isEmpty(Age)) {
             age.setError("Required");
         } else if (TextUtils.isEmpty(hobbies)) {
             hobbiesView.setError("Required");
         } else if (img == null) {
 
             Toast.makeText(this, "Please Select User image", Toast.LENGTH_SHORT).show();
-        } if (TextUtils.isEmpty(Gender) ) {
+        }
+        if (TextUtils.isEmpty(Gender)) {
             Toast.makeText(this, "Select User gender", Toast.LENGTH_SHORT).show();
 
-        }else
-         {
+        } else {
 // insert data into user model contructor to create user object than add in database method to insert in db
-            User_Model userModel = new User_Model(Name,Username,Password,DOB,Age,hobbies,Gender,dbimg(img));
+            User_Model userModel = new User_Model(Name, Username, Password, DOB, Age, hobbies, Gender, dbimg(img));
 
             if (db_helper.checkUsernameIfexist(Username)) {
                 if (db_helper.Register_user(userModel)) {
@@ -308,7 +345,7 @@ if (db_helper.User_Login(userModel)){
         }
 
 
-        if (requestCode == Capture_IMG && resultCode == RESULT_OK){
+        if (requestCode == Capture_IMG && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
 
             if (extras != null) {
@@ -325,13 +362,6 @@ if (db_helper.User_Login(userModel)){
 
             }
         }
-    }
-    public static byte[] dbimg(Bitmap img) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-        img.compress(Bitmap.CompressFormat.JPEG, 0, stream);
-        byte Imgbyte[] = stream.toByteArray();
-        return Imgbyte;
     }
 
 }

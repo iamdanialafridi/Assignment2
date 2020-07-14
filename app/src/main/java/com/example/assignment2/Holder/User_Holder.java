@@ -1,6 +1,8 @@
 package com.example.assignment2.Holder;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -13,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignment2.Classess.User_Model;
+import com.example.assignment2.MainActivity;
 import com.example.assignment2.R;
 
 import java.util.List;
@@ -54,8 +57,20 @@ User_Model userModel = user_modelList.get(position);
         TextView Fullname;
         public View_Holder(@NonNull View itemView) {
             super(itemView);
-            USERIMG= itemView.findViewById(R.id.USERIMG);
+            USERIMG = itemView.findViewById(R.id.USERIMG);
             Fullname = itemView.findViewById(R.id.Fullname);
+
+            USERIMG.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int pos = getAdapterPosition();
+                    int UID = user_modelList.get(pos).getUser_id();
+                    Intent i = new Intent(context, MainActivity.class);
+                    i.putExtra("USERID", UID);
+                    context.startActivity(i);
+                    ((Activity) context).finish();
+                }
+            });
         }
     }
 }

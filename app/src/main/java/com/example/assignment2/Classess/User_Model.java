@@ -42,20 +42,28 @@ public class User_Model {
         User_image = user_image;
     }
 // getting user registration information along with user_id for showing currently login user information by user_id..
-    public User_Model(int user_id, String name, String username,  String user_dob, String user_age, String user_hobbies, String user_gender, byte[] user_image) {
-        this.user_id = user_id;
-        this.name = name;
-        this.username = username;
-        User_dob = user_dob;
-        User_age = user_age;
-        User_hobbies = user_hobbies;
-        User_gender = user_gender;
-        User_image = user_image;
-    }
-// user login contrctor with username and password only
+public User_Model(int user_id, String name, String username, String user_dob, String user_age, String user_hobbies, String user_gender, byte[] user_image) {
+    this.user_id = user_id;
+    this.name = name;
+    this.username = username;
+    User_dob = user_dob;
+    User_age = user_age;
+    User_hobbies = user_hobbies;
+    User_gender = user_gender;
+    User_image = user_image;
+}
+
+    // user login contrctor with username and password only
     public User_Model(String username, String user_password) {
         this.username = username;
         User_password = user_password;
+    }
+
+    public User_Model(int user_id, String name, byte[] user_image) {
+        this.user_id = user_id;
+        this.name = name;
+        User_image = user_image;
+
     }
 
     public int getUser_id() {
