@@ -79,7 +79,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:hint="@string/username"
+                    android:hint="Email"
+                    android:inputType="textEmailAddress"
 
                     android:padding="10dp" />
 
@@ -213,7 +214,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:autofillHints="Username"
-                    android:hint="Enter Username"
+                    android:hint="Enter Email"
+                    android:inputType="textEmailAddress"
                     android:padding="10dp"
                     android:textColor="#fff"
                     android:textColorHint="#fff" />
@@ -272,9 +274,9 @@
 
                 <ImageView
                     android:id="@+id/UserImg"
-                    android:layout_width="300dp"
+                    android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:scaleType="fitCenter"
+                    android:scaleType="fitXY"
                     android:src="@drawable/user" />
 
                 <LinearLayout

@@ -3,8 +3,6 @@ package com.example.assignment2.Holder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.assignment2.Classess.User_Model;
 import com.example.assignment2.MainActivity;
 import com.example.assignment2.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -40,10 +39,10 @@ List<User_Model> user_modelList;
 
     @Override
     public void onBindViewHolder(@NonNull View_Holder holder, int position) {
-User_Model userModel = user_modelList.get(position);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(userModel.getUser_image(),0,userModel.getUser_image().length);
-        //holder.img.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 380, 130, false));
-        holder.USERIMG.setImageBitmap(bitmap);
+        User_Model userModel = user_modelList.get(position);
+        Picasso.get().load(userModel.getUser_image()).fit()
+                .placeholder(R.drawable.placeholder)
+                .centerCrop().into(holder.USERIMG);
         holder.Fullname.setText(userModel.getName());
     }
 
@@ -64,7 +63,7 @@ User_Model userModel = user_modelList.get(position);
                 @Override
                 public void onClick(View view) {
                     int pos = getAdapterPosition();
-                    int UID = user_modelList.get(pos).getUser_id();
+                    String UID = user_modelList.get(pos).getUser_id();
                     Intent i = new Intent(context, MainActivity.class);
                     i.putExtra("USERID", UID);
                     context.startActivity(i);
